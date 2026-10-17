@@ -1,0 +1,17 @@
+{
+  "name": "lava",
+  "grid": { "width": 192, "height": 108 },
+  "fluid": { "viscosity": 0.2, "dyeFade": 0.992, "velocityFade": 0.997, "vorticity": 6, "pressureIterations": 20 },
+  "look": { "colorMode": "palette", "glow": 1.1, "glowLod": 4, "exposure": 1.2, "brightness": 1.0, "palette": [[0.35, 0.02, 0.0], [1.0, 0.35, 0.0], [1.0, 0.95, 0.6]] },
+  "emitters": {
+    "burst":  { "enabled": true, "gain": 1.3, "threshold": 0.1,  "color": [1.0, 0.8, 0.5], "strength": 1.2, "ringRadius": 0.1, "splats": 10, "refractory": 0.1 },
+    "vortex": { "enabled": true, "gain": 1.2, "threshold": 0.15, "color": [0.9, 0.2, 0.05], "strength": 0.7, "radius": 0.3 },
+    "jets":   { "enabled": true, "gain": 0.8, "threshold": 0.2,  "color": [1.0, 0.5, 0.1], "strength": 0.5, "radius": 0.18, "rate": 0.3 },
+    "splash": { "enabled": true, "gain": 1.0, "threshold": 0.1,  "color": [1.0, 0.6, 0.2], "strength": 0.9, "seed": 7, "refractory": 0.1 },
+    "sparks": { "enabled": true, "gain": 0.7, "threshold": 0.25, "color": [1.0, 0.9, 0.5], "count": 18 },
+    "glow":   { "base": 0.7, "gain": 0.5 },
+    "hue":    { "enabled": false, "rate": 0.5, "minChroma": 0.2 },
+    "ambient": { "enabled": true, "strength": 0.8, "speed": 0.07, "points": 2, "radius": 0.12, "color": [0.6, 0.12, 0.0], "dye": 0.2 },
+    "mix":     { "music": true, "musicStrength": 1.6 }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "aurora",
+  "grid": { "width": 192, "height": 108 },
+  "fluid": { "viscosity": 0, "dyeFade": 0.988, "velocityFade": 0.999, "vorticity": 20, "pressureIterations": 20 },
+  "look": { "colorMode": "palette", "glow": 0.9, "glowLod": 3, "exposure": 1.6, "brightness": 1.0, "palette": [[0.0, 0.25, 0.2], [0.1, 0.9, 0.6], [0.7, 0.5, 1.0]] },
+  "emitters": {
+    "burst":  { "enabled": true, "gain": 0.6, "threshold": 0.1,  "color": [0.8, 1.0, 0.9], "strength": 1.0, "ringRadius": 0.06, "splats": 16, "refractory": 0.08 },
+    "vortex": { "enabled": true, "gain": 1.0, "threshold": 0.2,  "color": [0.3, 0.1, 0.8], "strength": 0.8, "radius": 0.25 },
+    "jets":   { "enabled": true, "gain": 1.6, "threshold": 0.12, "color": [0.1, 1.0, 0.7], "strength": 1.1, "radius": 0.28, "rate": 0.4 },
+    "splash": { "enabled": true, "gain": 0.8, "threshold": 0.1,  "color": [0.6, 0.3, 1.0], "strength": 1.0, "seed": 3, "refractory": 0.08 },
+    "sparks": { "enabled": true, "gain": 1.0, "threshold": 0.2,  "color": [0.9, 1.0, 1.0], "count": 40 },
+    "glow":   { "base": 0.6, "gain": 0.7 },
+    "hue":    { "enabled": true, "rate": 0.3, "minChroma": 0.25 },
+    "ambient": { "enabled": true, "strength": 0.9, "speed": 0.12, "points": 4, "radius": 0.1, "color": [0.05, 0.45, 0.35], "dye": 0.2 },
+    "mix":     { "music": true, "musicStrength": 1.4 }
+  }
+}

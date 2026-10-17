@@ -1,0 +1,7 @@
+{
+  "name": "vvavviz",
+  "title": "vvavviz (audio playground)",
+  "players": "-",
+  "description": "Audio visualizer and music-driven fluid plasma. Starts in plasma mode on the default input device.",
+  "args": ["--plasma", "-i"]
+}

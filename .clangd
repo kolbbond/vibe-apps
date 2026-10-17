@@ -1,0 +1,27 @@
+# suppress diag for certain files
+# to check the clangd 
+# `clangd --check=<file> --compile-commands-dir=build --log=verbose 2>&1 | grep -i config -n | tail -n 50`
+If:
+  PathMatch: ".*/bak/*."
+Diagnostics:
+  ClangTidy:
+    Checks: "-*"
+  Clangd:
+    Diagnostic: None
+---
+CompileFlags:
+  CompilationDatabase: build
+  Add: [
+    -Wall,
+    -Wextra,
+    -Wpedantic,
+    -Wshadow,
+    -Wconversion,
+    -Wnull-dereference,
+    -Wdouble-promotion,
+    -Wold-style-cast,
+    -Woverloaded-virtual,
+    -Wformat=2
+  ]
+
+clang-tidy: true

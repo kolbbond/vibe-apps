@@ -1,0 +1,17 @@
+{
+  "name": "neon",
+  "grid": { "width": 192, "height": 108 },
+  "fluid": { "viscosity": 0, "dyeFade": 0.985, "velocityFade": 0.999, "vorticity": 12, "pressureIterations": 20 },
+  "look": { "colorMode": "dye", "glow": 0.8, "glowLod": 3, "exposure": 1.5, "brightness": 1.0, "palette": [[0.5, 0.0, 0.6], [0.0, 0.8, 1.0], [1.0, 1.0, 1.0]] },
+  "emitters": {
+    "burst":  { "enabled": true, "gain": 1.0, "threshold": 0.1,  "color": [1.0, 0.95, 0.85], "strength": 1.5, "ringRadius": 0.08, "splats": 12, "refractory": 0.08 },
+    "vortex": { "enabled": true, "gain": 1.0, "threshold": 0.2,  "color": [0.45, 0.1, 0.9], "strength": 1.0, "radius": 0.25 },
+    "jets":   { "enabled": true, "gain": 1.0, "threshold": 0.15, "color": [0.0, 0.85, 1.0], "strength": 0.8, "radius": 0.2, "rate": 0.5 },
+    "splash": { "enabled": true, "gain": 1.0, "threshold": 0.1,  "color": [1.0, 0.15, 0.75], "strength": 1.2, "seed": 1, "refractory": 0.08 },
+    "sparks": { "enabled": true, "gain": 1.0, "threshold": 0.2,  "color": [1.0, 1.0, 0.9], "count": 30 },
+    "glow":   { "base": 0.6, "gain": 0.6 },
+    "hue":    { "enabled": true, "rate": 0.5, "minChroma": 0.2 },
+    "ambient": { "enabled": true, "strength": 0.6, "speed": 0.15, "points": 3, "radius": 0.08, "color": [0.35, 0.1, 0.7], "dye": 0.15 },
+    "mix":     { "music": true, "musicStrength": 1.5 }
+  }
+}
