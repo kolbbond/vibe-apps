@@ -2,6 +2,7 @@
 // Main entry point
 
 #include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
@@ -207,13 +208,15 @@ int main(int argc, char** argv) {
         vibe::daw::PlayBackInfo* pi = state.pb;
         auto finished = std::make_shared<std::atomic<bool>>(false);
         state.playback_finished = finished;
-        state.playback_thread = std::thread([outstream, lsio, pi, finished]() {
+        state.playback_thread = std::thread([outstream, pi, finished]() {
             if (int err = soundio_outstream_start(outstream)) {
                 fprintf(stderr, "unable to start device: %s\n", soundio_strerror(err));
                 *finished = true;
                 return;
             }
-            while (!pi->is_done) { soundio_wait_events(lsio->get_soundio()); }
+            // only the main loop pumps libsoundio events (soundio_flush_events): two threads
+            // pumping race in the backend's device rescan and crash
+            while (!pi->is_done) { std::this_thread::sleep_for(std::chrono::milliseconds(5)); }
             *finished = true; // the stream is destroyed by whoever joins (stop_playback callers)
         });
 

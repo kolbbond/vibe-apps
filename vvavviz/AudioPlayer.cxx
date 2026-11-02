@@ -140,20 +140,18 @@ bool start_file_playback(AppState* state, const std::string& filepath) {
 
     // Start playback in background thread
     vibe::daw::PlayBackInfo* pi = state->pb;
-    vibe::daw::ShLibSoundIoPr lsio = state->lsio;
     SoundIoOutStream* os = outstream;
 
     auto finished = std::make_shared<std::atomic<bool>>(false);
     state->playback_finished = finished;
-    state->playback_thread = std::thread([os, lsio, pi, finished]() {
+    state->playback_thread = std::thread([os, pi, finished]() {
         if (int err = soundio_outstream_start(os)) {
             fprintf(stderr, "Unable to start playback: %s\n", soundio_strerror(err));
             *finished = true;
             return;
         }
-        while (!pi->is_done) {
-            soundio_wait_events(lsio->get_soundio());
-        }
+        // only the main loop pumps libsoundio events (see vvavviz.cxx)
+        while (!pi->is_done) std::this_thread::sleep_for(std::chrono::milliseconds(5));
         std::printf("Playback complete\n");
         *finished = true;
     });
