@@ -2,6 +2,8 @@
 
 An audio visualizer and fluid plasma playground for the vibe engine.
 
+![vvavviz: waveform waterfall, flat plasma (lava), terrain and planet (neon)](../docs/vvavviz.png)
+
 ## Run
 
     build/bin/vvavviz                       # live input (default device)

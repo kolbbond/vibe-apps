@@ -2,6 +2,8 @@
 
 Apps built on the [vibe](https://github.com/kolbbond/vibe) engine.
 
+![vvavviz: waveform waterfall, flat plasma (lava), terrain and planet (neon)](docs/vvavviz.png)
+
 - **vvavviz**: a music visualizer. Point it at a track or at live audio and it
   draws spectra, pitch and a music-driven fluid "plasma". See
   [vvavviz/README.md](vvavviz/README.md).
