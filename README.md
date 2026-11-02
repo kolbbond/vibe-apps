@@ -19,10 +19,10 @@ Until then, build from source on Linux as described below.
 ## Build from source (Linux)
 
 vibe-apps builds against a `vibe` checkout next to it, at the engine release this
-version of the apps was built with (`v0.002.3`):
+version of the apps was built with (`v0.002.4`):
 
 ```bash
-git clone --branch v0.002.3 --recurse-submodules https://github.com/kolbbond/vibe.git
+git clone --branch v0.002.4 --recurse-submodules https://github.com/kolbbond/vibe.git
 git clone https://github.com/kolbbond/vibe-apps.git
 make -C vibe deps          # third-party libraries (slow, once)
 cd vibe-apps
