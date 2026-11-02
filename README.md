@@ -12,8 +12,9 @@ Apps built on the [vibe](https://github.com/kolbbond/vibe) engine.
 
 ## Just want to run vvavviz?
 
-Grab a build from the [Releases](https://github.com/kolbbond/vibe-apps/releases)
-page.
+Prebuilt downloads (a Linux AppImage and a Windows zip) are on the way and will
+appear on the [Releases](https://github.com/kolbbond/vibe-apps/releases) page.
+Until then, build from source on Linux as described below.
 
 ## Build from source (Linux)
 
