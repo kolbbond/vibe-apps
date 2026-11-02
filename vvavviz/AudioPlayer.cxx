@@ -82,6 +82,7 @@ bool start_file_playback(AppState* state, const std::string& filepath) {
     int new_sample_rate = 44100;
     if (!load_audio_file(filepath, state->audio_samples, new_sample_rate)) {
         std::printf("Failed to load: %s\n", filepath.c_str());
+        state->current_file = filepath; // so auto-advance moves past it instead of retrying it
         return false;
     }
 
@@ -128,6 +129,7 @@ bool start_file_playback(AppState* state, const std::string& filepath) {
     int err = state->lsio->open_outstream(outstream);
     if (err != 0 || !state->lsio->valid_outstream(outstream)) {
         std::printf("Failed to open outstream\n");
+        state->current_file = filepath;
         return false;
     }
 

@@ -96,6 +96,7 @@ struct AppState {
     int selected_file_idx = -1;
     bool needs_refresh = true;
     std::string current_file = "";
+    bool auto_advance = true;        // play the next found file when a track ends
 
     // Dynamic file loading
     std::string pending_file = "";

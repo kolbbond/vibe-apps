@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <thread>
 
 #ifdef _WIN32
@@ -22,6 +23,7 @@
 
 #include "AppState.hxx"
 #include "AudioPlayer.hxx"
+#include "FileBrowser.hxx"
 #include "GuiViews.hxx"
 
 // GUI callback
@@ -41,7 +43,7 @@ int main(int argc, char** argv) {
 
     // Command line parsing
     TCLAP::CmdLine cmd("vvavviz - Audio Visualizer with FFT", ' ', "1.0");
-    TCLAP::UnlabeledValueArg<std::string> file_arg("file", "Audio file to play", false, "", "filepath", cmd);
+    TCLAP::UnlabeledValueArg<std::string> file_arg("file", "Audio file to play, or a folder to play through", false, "", "filepath", cmd);
     TCLAP::SwitchArg input_arg("i", "input", "Capture from input device instead of file", cmd, false);
     TCLAP::SwitchArg list_arg("l", "list-devices", "List available input devices and exit", cmd, false);
     TCLAP::ValueArg<int> device_arg("d", "device", "Input device index (use -l to list, -1 for system default)", false, -1, "index", cmd);
@@ -89,6 +91,11 @@ int main(int argc, char** argv) {
     smg::GuiConfig gui_config;
     gui_config.title = "vvavviz";
     gui_config.samples = 8; // window MSAA (plasma + background waterfall); smg falls back if unsupported
+#ifndef _WIN32
+    // "virtual" DPI scaling reads the X resource Xft.dpi, which Hyprland/XWayland don't set: Magnum warns
+    // and falls back to physical DPI anyway, so ask for physical directly (an explicit setting still wins)
+    setenv("MAGNUM_DPI_SCALING", "physical", 0);
+#endif
     smg::GuiBase gb({ argc, argv }, gui_config);
 
     // Set window to half-width, full-height
@@ -146,7 +153,23 @@ int main(int argc, char** argv) {
 
     if (mode == AudioMode::FILE_PLAYBACK) {
         // File playback mode
+        // the browser lists the file's folder (or the folder given), so Next/auto-advance continue through it
         std::string fpath = file_arg.getValue();
+        const bool is_dir = fs::is_directory(fpath);
+        state.search_path = is_dir ? fpath : fs::absolute(fpath).parent_path().string();
+        scan_audio_files(&state);
+        if (is_dir) {
+            if (state.found_files.empty()) {
+                std::printf("No audio files in: %s\n", fpath.c_str());
+                lsio->destroy();
+                return 1;
+            }
+            fpath = state.found_files.front();
+        } else {
+            fpath = fs::absolute(fpath).string();
+        }
+        state.current_file = fpath;
+        state.selected_file_idx = adjacent_track(state.found_files, fpath, 0);
         lg->msg("Audio File: %s%s%s\n", KCYN, fpath.c_str(), KNRM);
 
         arma::Mat<fltp> samples;
@@ -290,7 +313,15 @@ int main(int argc, char** argv) {
 
     // Main loop
     bool done = false;
+    std::string advanced_from; // current_file the last auto-advance left, so a finished list doesn't retry each frame
     while (!done) {
+        // Auto-advance: a finished track queues the next one in the browser's list
+        if (state.auto_advance && state.mode == AudioMode::FILE_PLAYBACK && state.pb && state.pb->is_done &&
+            !state.file_load_requested && state.current_file != advanced_from) {
+            advanced_from = state.current_file;
+            request_adjacent_track(&state, +1);
+        }
+
         // Handle pending file load request
         if (state.file_load_requested) {
             state.file_load_requested = false;
@@ -325,7 +356,7 @@ int main(int argc, char** argv) {
         done = !gb.mainLoopIteration() || state.quit_requested;
     }
 
-    // Cleanup: GL views are function-statics that outlive the window, free their GL objects now
+    // Cleanup: destroy the views (they own GL objects) while the GL context still exists
     release_gl_resources();
     // the playback thread waits inside soundio, so stop and join it first
     stop_playback(&state);
@@ -346,5 +377,12 @@ int main(int argc, char** argv) {
     lsio->destroy();
     delete state.pb;
 
+#ifndef _WIN32
+    // everything vvavviz owns is released above; skip SDL's teardown in ~GuiBase, whose Wayland disconnect
+    // (sdl2-compat on SDL3) segfaults on some exits. ImGui would save its layout there, so save it here
+    if (const char* ini = ImGui::GetIO().IniFilename) ImGui::SaveIniSettingsToDisk(ini);
+    std::fflush(nullptr);
+    std::_Exit(0);
+#endif
     return 0;
 }

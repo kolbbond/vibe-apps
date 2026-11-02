@@ -26,6 +26,8 @@ cd vibe-apps
 make                       # = cmake --preset linux && cmake --build build
 make test
 build/bin/vvavviz --plasma -i
+make install               # -> ~/.local (bin, share/vvavviz, lib/vibe); PREFIX=/usr/local to change
+make uninstall             # removes what the last install wrote
 ```
 
 The system packages vibe needs are listed in its README.

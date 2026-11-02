@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <utility>
 
+#include <Corrade/Containers/Optional.h>
+#include <Corrade/Containers/String.h>
+#include <Corrade/Utility/Path.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
@@ -83,10 +86,23 @@ bool PlasmaView::set_display(const std::string& name) {
     return true;
 }
 
+// installed: <prefix>/share/vvavviz/presets next to <prefix>/bin; else the source tree's presets/
+static std::string presets_dir() {
+    static const std::string dir = [] {
+        if(auto exe = Corrade::Utility::Path::executableLocation()) {
+            const auto installed = std::filesystem::path{std::string{*exe}}.parent_path() / ".." / "share" / "vvavviz" / "presets";
+            std::error_code ec;
+            if(std::filesystem::is_directory(installed, ec)) return installed.lexically_normal().string();
+        }
+        return std::string{VVAVVIZ_PRESETS_DIR};
+    }();
+    return dir;
+}
+
 bool PlasmaView::load_preset(const std::string& nameOrPath) {
     const bool isPath = nameOrPath.find('/') != std::string::npos ||
                         (nameOrPath.size() > 5 && nameOrPath.compare(nameOrPath.size() - 5, 5, ".json") == 0);
-    const std::string path = isPath ? nameOrPath : std::string{VVAVVIZ_PRESETS_DIR} + "/" + nameOrPath + ".json";
+    const std::string path = isPath ? nameOrPath : presets_dir() + "/" + nameOrPath + ".json";
     fluid::Preset preset;
     std::string error;
     if(!fluid::loadPreset(path, preset, error)) {
@@ -101,7 +117,7 @@ bool PlasmaView::load_preset(const std::string& nameOrPath) {
 void PlasmaView::refresh_preset_list() {
     _presetFiles.clear();
     std::error_code ec;
-    for(const auto& entry : std::filesystem::directory_iterator{VVAVVIZ_PRESETS_DIR, ec})
+    for(const auto& entry : std::filesystem::directory_iterator{presets_dir(), ec})
         if(entry.path().extension() == ".json") _presetFiles.push_back(entry.path().stem().string());
     std::sort(_presetFiles.begin(), _presetFiles.end());
 }
@@ -118,7 +134,7 @@ void PlasmaView::save_preset(const std::string& name) {
     p.width = _solver->width();
     p.height = _solver->height();
     std::string error;
-    const std::string path = std::string{VVAVVIZ_PRESETS_DIR} + "/" + name + ".json";
+    const std::string path = presets_dir() + "/" + name + ".json";
     if(!fluid::savePreset(path, p, error)) {
         _status = error;
         return;

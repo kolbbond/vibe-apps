@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <vector>
 
 #include <imgui.h>
@@ -455,15 +456,17 @@ static void take_screenshot_if_due(AppState* state) {
 // Main orchestrator
 // ---------------------------------------------------------------------------
 
-static VisualizerState* g_visualizer = nullptr; // the function-static below, for release_gl_resources()
+// every view holds GL objects (framebuffers, meshes, shaders): a function-static would be destroyed after
+// main() returns, with no GL context left, and abort; release_gl_resources() destroys it while the window lives
+static std::unique_ptr<VisualizerState> g_visualizer;
 
 void release_gl_resources() {
-    if (g_visualizer) g_visualizer->plasma.release_gl();
+    g_visualizer.reset();
 }
 
 static void draw_fft_window(AppState* state) {
-    static VisualizerState vs;
-    g_visualizer = &vs;
+    if (!g_visualizer) g_visualizer = std::make_unique<VisualizerState>();
+    VisualizerState& vs = *g_visualizer;
 
     // command-line startup (once): --plasma shows only the plasma, full-screen
     static bool startup_applied = false;

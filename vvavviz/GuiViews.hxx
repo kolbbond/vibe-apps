@@ -9,5 +9,5 @@ void init_docking();
 // Draw all GUI windows (visualizer, file browser, profiling)
 void draw_gui(AppState* state);
 
-// free GL resources held by function-static views; call before the window/GL context is destroyed
+// destroy the views and their GL resources; call before the window/GL context is destroyed
 void release_gl_resources();

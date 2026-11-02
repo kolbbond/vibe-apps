@@ -1,5 +1,6 @@
 // Pure-computation audio pipeline implementation
 #include "AudioPipeline.hxx"
+#include "FftWindow.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -19,11 +20,7 @@ static void fill_buffers(VisualizerState& vs, arma::Mat<fltp>& raw_buffer) {
 
     vs.display_buffer = raw_buffer;
 
-    if (raw_buffer.n_cols >= static_cast<arma::uword>(vs.bufsize)) {
-        vs.buffer = raw_buffer.cols(raw_buffer.n_cols - vs.bufsize, raw_buffer.n_cols - 1);
-    } else {
-        vs.buffer = raw_buffer;
-    }
+    vs.buffer = fft_window(raw_buffer, static_cast<arma::uword>(vs.bufsize));
 }
 
 void fetch_audio(AppState* state, VisualizerState& vs, int sample_rate) {

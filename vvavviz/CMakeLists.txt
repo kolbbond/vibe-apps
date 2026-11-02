@@ -97,6 +97,16 @@ if(WIN32)
 endif()
 
 
- ## install
- install (TARGETS vvavviz RUNTIME DESTINATION bin)
+if(ENABLE_TESTING)
+    find_package(Corrade REQUIRED TestSuite)
+    corrade_add_test(VvavvizTrackListTest tests/TrackListTest.cxx)
+    target_include_directories(VvavvizTrackListTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    corrade_add_test(VvavvizFftWindowTest tests/FftWindowTest.cxx LIBRARIES Arma::Armadillo)
+    target_include_directories(VvavvizFftWindowTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+## install
+install(TARGETS vvavviz RUNTIME DESTINATION bin)
+# found at runtime as <bin>/../share/vvavviz/presets (PlasmaView.cxx presets_dir)
+install(DIRECTORY presets/ DESTINATION share/vvavviz/presets FILES_MATCHING PATTERN "*.json")
 

@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "AppState.hxx"
+#include "TrackList.hxx"
 
 namespace fs = std::filesystem;
 
@@ -17,6 +18,9 @@ bool is_audio_file(const fs::path& path);
 
 // Scan a directory for audio files
 void scan_audio_files(AppState* state);
+
+// Queue the found file `step` places from the current one; false if there is none
+bool request_adjacent_track(AppState* state, int step);
 
 // Draw the file browser ImGui window
 void draw_file_browser(AppState* state, bool* p_open = nullptr);

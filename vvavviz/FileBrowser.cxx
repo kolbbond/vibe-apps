@@ -40,6 +40,15 @@ void scan_audio_files(AppState* state) {
     state->needs_refresh = false;
 }
 
+bool request_adjacent_track(AppState* state, int step) {
+    const int idx = adjacent_track(state->found_files, state->current_file, step);
+    if (idx < 0) return false;
+    state->selected_file_idx = idx;
+    state->pending_file = state->found_files[idx];
+    state->file_load_requested = true;
+    return true;
+}
+
 void draw_file_browser(AppState* state, bool* p_open) {
     if (!ImGui::Begin("Music Browser", p_open)) {
         ImGui::End();
@@ -58,9 +67,9 @@ void draw_file_browser(AppState* state, bool* p_open) {
 #else
             state->search_path = std::string(home) + "/Music";
 #endif
-            std::strncpy(path_buf, state->search_path.c_str(), sizeof(path_buf) - 1);
         }
     }
+    if (path_buf[0] == '\0') std::strncpy(path_buf, state->search_path.c_str(), sizeof(path_buf) - 1);
 
     ImGui::Text("Search Path:");
     ImGui::SetNextItemWidth(400);
@@ -88,6 +97,19 @@ void draw_file_browser(AppState* state, bool* p_open) {
             fs::path(state->current_file).filename().string().c_str());
     }
 
+    // Transport: previous/next in the found list, auto-advance at end of track
+    const bool has_prev = adjacent_track(state->found_files, state->current_file, -1) >= 0;
+    const bool has_next = adjacent_track(state->found_files, state->current_file, +1) >= 0;
+    ImGui::BeginDisabled(!has_prev);
+    if (ImGui::Button("<< Prev")) request_adjacent_track(state, -1);
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!has_next);
+    if (ImGui::Button("Next >>")) request_adjacent_track(state, +1);
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::Checkbox("Auto-advance", &state->auto_advance);
+
     ImGui::Separator();
 
     // File list
@@ -98,7 +120,11 @@ void draw_file_browser(AppState* state, bool* p_open) {
             std::string display_name = p.filename().string();
 
             bool is_selected = (static_cast<int>(i) == state->selected_file_idx);
-            if (ImGui::Selectable(display_name.c_str(), is_selected, ImGuiSelectableFlags_AllowDoubleClick)) {
+            const bool is_playing = (filepath == state->current_file);
+            if (is_playing) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
+            const bool clicked = ImGui::Selectable(display_name.c_str(), is_selected, ImGuiSelectableFlags_AllowDoubleClick);
+            if (is_playing) ImGui::PopStyleColor();
+            if (clicked) {
                 state->selected_file_idx = static_cast<int>(i);
 
                 if (ImGui::IsMouseDoubleClicked(0)) {

@@ -5,7 +5,8 @@ An audio visualizer and fluid plasma playground for the vibe engine.
 ## Run
 
     build/bin/vvavviz                       # live input (default device)
-    build/bin/vvavviz path/to/track.wav     # play and visualize a file
+    build/bin/vvavviz path/to/track.wav     # play and visualize a file, then the rest of its folder
+    build/bin/vvavviz path/to/album/        # play through a folder (recursive, sorted by path)
     build/bin/vvavviz --plasma -i           # plasma, full screen, live input
     build/bin/vvavviz --plasma --preset lava path/to/track.wav
 
@@ -16,6 +17,13 @@ Audio Devices* and pick the "Monitor of …" input.
 Flags: `-i` live input, `-d N` input device, `-l` list devices, `--plasma`,
 `--preset NAME|PATH`, `--mute` (analyze a file but play silence),
 `--screenshot out.ppm --frames N` (writes frame N before the ImGui pass, then quits).
+
+## Music Browser
+
+*View → Music Browser* lists every audio file under a folder (default `~/Music`, or the
+folder of the file you started with). Double-click to play; **<< Prev** / **Next >>** step
+through the list, and with **Auto-advance** on (default) a finished track starts the next one.
+Files that fail to decode are skipped. The playing track is shown in green.
 
 ## Plasma
 
