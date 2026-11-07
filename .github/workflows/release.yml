@@ -11,7 +11,7 @@ on:
 
 env:
   # the vibe engine release these apps build against (keep in sync with ci.yml and README.md)
-  VIBE_REF: v0.002.4
+  VIBE_REF: v0.002.5
 
 jobs:
   version:
@@ -108,9 +108,18 @@ jobs:
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           export LD_LIBRARY_PATH="$PWD/AppDir/usr/lib/vibe"
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable AppDir/usr/bin/vvavviz \
+            --desktop-file vvavviz.desktop --icon-file vvavviz.png
+          # the Ubuntu copyright file of every system library linuxdeploy bundled
+          for so in AppDir/usr/lib/*.so*; do
+            pkg=$(dpkg -S "*/$(basename "$so")" 2>/dev/null | head -1 | cut -d: -f1) || true
+            if [[ -n "$pkg" && -f "/usr/share/doc/$pkg/copyright" ]]; then
+              install -Dm644 "/usr/share/doc/$pkg/copyright" "AppDir/usr/share/doc/$pkg/copyright"
+            fi
+          done
+          echo "copyright files: $(find AppDir/usr/share/doc -name copyright | wc -l)"
           OUTPUT="dist/vvavviz-${VERSION}-x86_64.AppImage" ./linuxdeploy-x86_64.AppImage \
-            --appdir AppDir --executable AppDir/usr/bin/vvavviz \
-            --desktop-file vvavviz.desktop --icon-file vvavviz.png --output appimage
+            --appdir AppDir --output appimage
 
       - name: Smoke test packages
         env:
@@ -219,8 +228,9 @@ jobs:
             dist/*.zip
           if-no-files-found: error
 
+  # Windows does not block a release: if it fails, the draft goes out with the Linux files only
   publish:
-    if: github.ref_type == 'tag'
+    if: always() && github.ref_type == 'tag' && needs.linux.result == 'success'
     needs: [version, linux, windows]
     runs-on: ubuntu-24.04
     permissions:
@@ -244,3 +254,7 @@ jobs:
             - **Linux**: `vvavviz-*-x86_64.AppImage` runs on its own (`chmod +x`, then run it).
               The `.tar.gz` needs SDL2, FFmpeg, Boost and FFTW from your distro.
             - **Windows**: the `.exe` installer, or unzip the `.zip` and run `bin\vvavviz.exe`.
+
+            The source is MIT. These packages bundle GPL libraries (FFTW, and FFmpeg's codecs on
+            Linux), so the packages are distributed under GPL-2.0-or-later. See
+            `share/doc/vvavviz/THIRD-PARTY-NOTICES.md` in each package.

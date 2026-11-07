@@ -107,6 +107,10 @@ if(WIN32 AND TARGET vibecommon)
     )
 endif()
 
+# license + third-party notices travel with every install and package
+install(FILES LICENSE THIRD-PARTY-NOTICES.md DESTINATION share/doc/vvavviz)
+install(DIRECTORY licenses/ DESTINATION share/doc/vvavviz/licenses)
+
 # CPack: vvavviz installer/zip (Windows) or tarball (Linux)
 set(CPACK_PACKAGE_NAME "vvavviz")
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})

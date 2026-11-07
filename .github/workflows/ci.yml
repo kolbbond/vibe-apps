@@ -8,7 +8,7 @@ on:
 
 env:
   # the vibe engine release these apps build against (keep in sync with README.md)
-  VIBE_REF: v0.002.4
+  VIBE_REF: v0.002.5
 
 jobs:
   linux:
