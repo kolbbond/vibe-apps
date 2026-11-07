@@ -1,5 +1,7 @@
 # vibe-apps
 
+[![CI](https://github.com/kolbbond/vibe-apps/actions/workflows/ci.yml/badge.svg)](https://github.com/kolbbond/vibe-apps/actions/workflows/ci.yml)
+
 Apps built on the [vibe](https://github.com/kolbbond/vibe) engine.
 
 ![vvavviz: waveform waterfall, flat plasma (lava), terrain and planet (neon)](docs/vvavviz.png)
@@ -10,13 +12,9 @@ Apps built on the [vibe](https://github.com/kolbbond/vibe) engine.
 - **vibe-launcher**: a full-screen launcher for the vibe apps and games in a
   build's `games.json`, on the desk or on a TV (Hyprland).
 
-## Just want to run vvavviz?
-
-Prebuilt downloads (a Linux AppImage and a Windows zip) are on the way and will
-appear on the [Releases](https://github.com/kolbbond/vibe-apps/releases) page.
-Until then, build from source on Linux as described below.
-
 ## Build from source (Linux)
+
+There are no prebuilt downloads yet, so build from source as described below.
 
 vibe-apps builds against a `vibe` checkout next to it, at the engine release this
 version of the apps was built with (`v0.002.4`):

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # the vibe engine release these apps build against (keep in sync with README.md)
+  VIBE_REF: v0.002.4
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out vibe-apps
+        uses: actions/checkout@v4
+        with:
+          path: vibe-apps
+
+      - name: Check out vibe engine
+        uses: actions/checkout@v4
+        with:
+          repository: kolbbond/vibe
+          ref: ${{ env.VIBE_REF }}
+          submodules: recursive
+          path: vibe
+          # while kolbbond/vibe is private, set a read-only token as VIBE_REPO_TOKEN
+          token: ${{ secrets.VIBE_REPO_TOKEN || github.token }}
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential gfortran cmake ninja-build pkg-config \
+            libboost-filesystem-dev libboost-iostreams-dev libtclap-dev \
+            libgl-dev libsdl2-dev libncurses-dev libfftw3-dev \
+            libavformat-dev libavcodec-dev libswresample-dev libavutil-dev \
+            libasound2-dev libpulse-dev libjack-jackd2-dev
+
+      # the deps/ superbuild is slow; it only changes with the engine ref
+      - name: Cache vibe third-party deps
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: vibe/.deps/usr
+          key: vibe-deps-${{ runner.os }}-ubuntu-24.04-${{ env.VIBE_REF }}-${{ hashFiles('vibe/deps/**') }}
+
+      - name: Build vibe deps
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: make -C vibe deps PARALLEL="--parallel $(nproc)"
+
+      - name: Build
+        working-directory: vibe-apps
+        run: make PARALLEL="--parallel $(nproc)"
+
+      - name: Test
+        working-directory: vibe-apps
+        run: make test
