@@ -170,11 +170,13 @@ jobs:
         shell: pwsh
         run: '"VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV'
 
-      - name: Cache vcpkg binaries
-        uses: actions/cache@v4
+      # restore/save are split so the slow vcpkg and deps builds are kept even when a later step fails
+      - name: Restore vcpkg binaries
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('vibe-apps/.github/workflows/release.yml') }}
+          key: vcpkg-${{ runner.os }}-${{ env.VCPKG_PACKAGES }}
           restore-keys: vcpkg-${{ runner.os }}-
 
       - name: Install vcpkg packages
@@ -183,9 +185,16 @@ jobs:
           New-Item -ItemType Directory -Force $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
           & "$env:VCPKG_ROOT\vcpkg.exe" install $env:VCPKG_PACKAGES.Split(' ')
 
-      - name: Cache vibe third-party deps
+      - name: Save vcpkg binaries
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+
+      - name: Restore vibe third-party deps
         id: deps-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: vibe/.deps/usr
           key: vibe-deps-${{ runner.os }}-${{ env.VIBE_REF }}-${{ hashFiles('vibe/deps/**') }}
@@ -197,6 +206,13 @@ jobs:
           cmake --preset windows-vcpkg -S deps
           cmake --build .deps --parallel
 
+      - name: Save vibe third-party deps
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: vibe/.deps/usr
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
+
       - name: Build and test
         working-directory: vibe-apps
         shell: pwsh
@@ -206,10 +222,32 @@ jobs:
           cmake --build build --parallel
           ctest --test-dir build --output-on-failure
 
-      # NSIS installer + zip (CPack config in CMakeLists.txt; NSIS is on the runner)
-      - name: Package
+      # zip first: it is the required package. CPack config is in CMakeLists.txt
+      - name: Package zip
         working-directory: vibe-apps/build
-        run: cpack -B "${{ github.workspace }}\dist"
+        run: cpack -G ZIP -B "${{ github.workspace }}\cpack"
+
+      # the NSIS installer is a bonus until it is known to work; NSIS is on the runner
+      - name: Package installer
+        id: nsis
+        continue-on-error: true
+        working-directory: vibe-apps/build
+        run: cpack -G NSIS -B "${{ github.workspace }}\cpack" --verbose
+
+      - name: Collect packages
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item cpack\*.zip, cpack\*.exe dist\ -ErrorAction SilentlyContinue
+          Get-ChildItem dist
+
+      - name: Upload NSIS log
+        if: steps.nsis.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nsis-log
+          path: cpack/_CPack_Packages/**/NSIS*.log
+          if-no-files-found: warn
 
       - name: Smoke test zip
         shell: pwsh
@@ -223,10 +261,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vvavviz-windows
-          path: |
-            dist/*.exe
-            dist/*.zip
-          if-no-files-found: error
+          path: dist/*
 
   # Windows does not block a release: if it fails, the draft goes out with the Linux files only
   publish:
