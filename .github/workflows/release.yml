@@ -182,6 +182,7 @@ jobs:
       - name: Install vcpkg packages
         shell: pwsh
         run: |
+          $PSNativeCommandUseErrorActionPreference = $true # a failing cmake/vcpkg stops the step
           New-Item -ItemType Directory -Force $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
           & "$env:VCPKG_ROOT\vcpkg.exe" install $env:VCPKG_PACKAGES.Split(' ')
 
@@ -217,6 +218,7 @@ jobs:
         working-directory: vibe-apps
         shell: pwsh
         run: |
+          $PSNativeCommandUseErrorActionPreference = $true # a failing cmake/vcpkg stops the step
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo `
                 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
           cmake --build build --parallel
@@ -252,6 +254,7 @@ jobs:
       - name: Smoke test zip
         shell: pwsh
         run: |
+          $PSNativeCommandUseErrorActionPreference = $true # a failing cmake/vcpkg stops the step
           Get-ChildItem dist
           Expand-Archive (Get-ChildItem dist\*.zip).FullName -DestinationPath t
           $exe = (Get-ChildItem t -Recurse -Filter vvavviz.exe).FullName
